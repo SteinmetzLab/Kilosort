@@ -19,7 +19,7 @@ ops = rez.ops;
 [wTEMP, wPCA]    = extractTemplatesfromSnippets(rez, NrankPC);
 
 % move these to the GPU
-wPCA = gpuArray(wPCA(:, 1:2*Nrank));
+wPCA = gpuArray(wPCA(:, 1:Nrank));
 wTEMP = gpuArray(wTEMP);
 wPCAd = double(wPCA); % convert to double for extra precision
 ops.wPCA = gather(wPCA);
@@ -59,19 +59,15 @@ nInnerIter  = 60; % this is for SVD for the power iteration
 % schedule of learning rates for the model fitting part
 % starts small and goes high, it corresponds approximately to the number of spikes
 % from the past that were averaged to give rise to the current template
+pmi = exp(-1./linspace(ops.momentum(1), ops.momentum(2), niter));
 
-if ~getOr(ops, 'flag_warm_start', 0)
-    pmi = exp(-1./linspace(ops.momentum(1), ops.momentum(2), niter));
-else
-     pmi = exp(-1./linspace(ops.momentum(2), ops.momentum(2), niter));
-end
 Nsum = min(Nchan,7); % how many channels to extend out the waveform in mexgetspikes
 % lots of parameters passed into the CUDA scripts
 Params     = double([NT Nfilt ops.Th(1) nInnerIter nt0 Nnearest ...
     Nrank ops.lam pmi(1) Nchan NchanNear ops.nt0min 1 Nsum NrankPC ops.Th(1) useStableMode]);
 
 % W0 has to be ordered like this
-W0 = permute(double(wPCA(:,1:Nrank)), [1 3 2]);
+W0 = permute(double(wPCA), [1 3 2]);
 
 % initialize the list of channels each template lives on
 iList = int32(gpuArray(zeros(Nnearest, Nfilt)));
@@ -79,17 +75,8 @@ iList = int32(gpuArray(zeros(Nnearest, Nfilt)));
 % initialize average number of spikes per batch for each template
 nsp = gpuArray.zeros(0,1, 'double');
 
-if ~getOr(ops, 'flag_warm_start', 0)
-   W = [];
-else
-    dWU = gpuArray(rez.dWU);
-    W = gpuArray(rez.W);
-    Params(13) = 0;
-    Nfilt = size(W,2); % update the number of filters/templates
-    % this flag starts 0, is set to 1 later
-    Params(2) = Nfilt;
-    nsp = gpuArray.zeros(Nfilt,1, 'double');
-end
+% this flag starts 0, is set to 1 later
+Params(13) = 0;
 
 % kernels for subsample alignment
 [Ka, Kb] = getKernels(ops, 10, 1);
@@ -123,7 +110,7 @@ for ibatch = 1:niter
     dataRAW = single(gpuArray(dat))/ ops.scaleproc;
     Params(1) = size(dataRAW,1);
     
-    if ibatch==1 && ~getOr(ops, 'flag_warm_start', 0)
+    if ibatch==1
        % only on the first batch, we first get a new set of spikes from the residuals,
        % which in this case is the unmodified data because we start with no templates       
        if getOr(ops, 'new_spk', 0)
@@ -145,12 +132,11 @@ for ibatch = 1:niter
     [~, iW] = max(abs(dWU(nt0min, :, :)), [], 2); % max channel (either positive or negative peak)
     iW = int32(squeeze(iW));
     
-    if ~getOr(ops, 'flag_warm_start', 0)
-        [iW, isort] = sort(iW); % sort by max abs channel
-        W = W(:,isort, :); % user ordering to resort all the other template variables
-        dWU = dWU(:,:,isort);
-        nsp = nsp(isort);
-    end
+    [iW, isort] = sort(iW); % sort by max abs channel
+    W = W(:,isort, :); % user ordering to resort all the other template variables
+    dWU = dWU(:,:,isort);
+    nsp = nsp(isort);
+    
 
     % decompose dWU by svd of time and space (via covariance matrix of 61 by 61 samples)
     % this uses a "warm start" by remembering the W from the previous iteration
@@ -205,7 +191,7 @@ for ibatch = 1:niter
     
     % \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-    if ibatch<niter && ~getOr(ops, 'flag_warm_start', 0)
+    if ibatch<niter
        
         % during the main "learning" phase of fitting a model
         if rem(ibatch, 5)==1
@@ -281,10 +267,8 @@ toc
 %%
 % We need to memorize the state of the templates at this timepoint.
 % final clean up, triage templates one last time
-if ~getOr(ops, 'flag_warm_start', 0)
-    [W, U, dWU, mu, nsp, ndrop] = ...
-        triageTemplates2(ops, iW, C2C, W, U, dWU, mu, nsp, ndrop);
-end
+[W, U, dWU, mu, nsp, ndrop] = ...
+    triageTemplates2(ops, iW, C2C, W, U, dWU, mu, nsp, ndrop);
 % final covariance matrix between all templates
 [WtW, iList] = getMeWtW(single(W), single(U), Nnearest);
 % iW is the final channel assigned to each template

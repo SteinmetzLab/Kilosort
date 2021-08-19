@@ -93,7 +93,6 @@ classdef ksGUI < handle
         function build(obj, f)
             % construct the GUI with appropriate panels
             obj.H.fig = f;
-            obj.H.fsz = 16; % base font size
             set(f, 'UserData', obj);
             
             set(f, 'KeyPressFcn', @(f,k)obj.keyboardFcn(f, k));
@@ -111,7 +110,7 @@ classdef ksGUI < handle
             
             obj.H.logPanel = uiextras.Panel(...
                 'Parent', obj.H.root, ...
-                'Title', 'Message Log', 'FontSize', 1*obj.H.fsz,...
+                'Title', 'Message Log', 'FontSize', 18,...
                 'FontName', 'Myriad Pro');
             
             obj.H.root.Sizes = [-1 -12 -2];
@@ -121,19 +120,19 @@ classdef ksGUI < handle
             obj.H.titleBar = uicontrol(...
                 'Parent', obj.H.titleHBox,...
                 'Style', 'text', 'HorizontalAlignment', 'left', ...
-                'String', 'Kilosort', 'FontSize', 2*obj.H.fsz,...
+                'String', 'Kilosort', 'FontSize', 36,...
                 'FontName', 'Myriad Pro', 'FontWeight', 'bold');
             
             obj.H.helpButton = uicontrol(...
                 'Parent', obj.H.titleHBox,...
                 'Style', 'pushbutton', ...
-                'String', 'Help', 'FontSize', 1.5*obj.H.fsz,...
+                'String', 'Help', 'FontSize', 24,...
                 'Callback', @(~,~)obj.help);
             
             obj.H.resetButton = uicontrol(...
                 'Parent', obj.H.titleHBox,...
                 'Style', 'pushbutton', ...
-                'String', 'Reset GUI', 'FontSize', 1.5*obj.H.fsz,...
+                'String', 'Reset GUI', 'FontSize', 24,...
                 'Callback', @(~,~)obj.reset);
             
             obj.H.titleHBox.Sizes = [-5 -1 -1];
@@ -144,22 +143,22 @@ classdef ksGUI < handle
             
             obj.H.settingsPanel = uiextras.Panel(...
                 'Parent', obj.H.setRunVBox, ...
-                'Title', 'Settings', 'FontSize', 1.2*obj.H.fsz,...
+                'Title', 'Settings', 'FontSize', 18,...
                 'FontName', 'Myriad Pro');
             obj.H.runPanel = uiextras.Panel(...
                 'Parent', obj.H.setRunVBox, ...
-                'Title', 'Run', 'FontSize', 1.2*obj.H.fsz,...
+                'Title', 'Run', 'FontSize', 18,...
                 'FontName', 'Myriad Pro');
             obj.H.setRunVBox.Sizes = [-4 -1];
             
             obj.H.probePanel = uiextras.Panel(...
                 'Parent', obj.H.mainSection, ...
-                'Title', 'Probe view', 'FontSize', 1.2*obj.H.fsz,...
+                'Title', 'Probe view', 'FontSize', 18,...
                 'FontName', 'Myriad Pro', 'Padding', 5);
             
             obj.H.dataPanel = uiextras.Panel(...
                 'Parent', obj.H.mainSection, ...
-                'Title', 'Data view', 'FontSize', 1.2*obj.H.fsz,...
+                'Title', 'Data view', 'FontSize', 18,...
                 'FontName', 'Myriad Pro', 'Padding', 5);
             
             obj.H.mainSection.Sizes = [-1 -1 -3];
@@ -213,7 +212,6 @@ classdef ksGUI < handle
                 'Style', 'text', 'HorizontalAlignment', 'right', ...
                 'String', 'Sampling frequency (Hz)');
                         
-            % set time range
             obj.H.settings.setTrangeTxt = uicontrol(...
                 'Parent', obj.H.settingsGrid,...
                 'Style', 'text', 'HorizontalAlignment', 'right', ...
@@ -231,17 +229,17 @@ classdef ksGUI < handle
                 'Style', 'text', 'HorizontalAlignment', 'right', ...
                 'String', 'Threshold');
 
-            % set lambda
+            %                         lambda
             obj.H.settings.setLambdaTxt = uicontrol(...
                 'Parent', obj.H.settingsGrid,...
                 'Style', 'text', 'HorizontalAlignment', 'right', ...
-                'String', 'Lambda (no longer very important)');
+                'String', 'Lambda');
             
             % ccsplit
             obj.H.settings.setCcsplitTxt = uicontrol(...
                 'Parent', obj.H.settingsGrid,...
                 'Style', 'text', 'HorizontalAlignment', 'right', ...
-                'String', 'AUC for splits (not used)');            
+                'String', 'AUC for splits');            
             
             % advanced options
             obj.H.settings.setAdvancedTxt = uicontrol(...
@@ -306,25 +304,25 @@ classdef ksGUI < handle
             
             obj.H.runVBox = uiextras.VBox(...
                 'Parent', obj.H.runPanel,...
-                'Spacing', 5, 'Padding', 5);
+                'Spacing', 10, 'Padding', 5);
             
             % button for run
             obj.H.runHBox = uiextras.HBox(...
                 'Parent', obj.H.runVBox,...
-                'Spacing', 5, 'Padding', 5);
+                'Spacing', 10, 'Padding', 5);
             
             obj.H.settings.runBtn = uicontrol(...
                 'Parent', obj.H.runHBox,...
                 'Style', 'pushbutton', 'HorizontalAlignment', 'left', ...
                 'String', 'Run All', 'enable', 'off', ...
-                'FontSize', 1.4*obj.H.fsz,...
+                'FontSize', 20,...
                 'Callback', @(~,~)obj.runAll());
             
             obj.H.settings.runEachVBox = uiextras.VBox(...
                 'Parent', obj.H.runHBox,...
                 'Spacing', 3, 'Padding', 3);
             
-            obj.H.runHBox.Sizes = [-1 -1];
+            obj.H.runHBox.Sizes = [-3 -1];
             
             obj.H.settings.runPreprocBtn = uicontrol(...
                 'Parent', obj.H.settings.runEachVBox,...
@@ -368,7 +366,7 @@ classdef ksGUI < handle
             
             % -- Data view
             obj.H.dataVBox = uiextras.VBox('Parent', ...
-                obj.H.dataPanel, 'Padding', 1);
+                obj.H.dataPanel, 'Padding', 20);
             
             obj.H.dataControlsTxt = uicontrol('Parent', obj.H.dataVBox,...
                 'Style', 'pushbutton', 'HorizontalAlignment', 'left', ...
@@ -385,7 +383,6 @@ classdef ksGUI < handle
             obj.H.dataAx = axes(obj.H.dataVBox);   
             
             set(obj.H.dataAx, 'ButtonDownFcn', @(f,k)obj.dataClickCB(f, k));
-            set(obj.H.dataAx, 'TickLength',[.005, .005])
             hold(obj.H.probeAx, 'on');
             
             set(obj.H.fig, 'WindowScrollWheelFcn', @(src,evt)obj.scrollCB(src,evt))
@@ -409,7 +406,7 @@ classdef ksGUI < handle
             obj.H.logBox = uicontrol(...
                 'Parent', obj.H.logPanel,...
                 'Style', 'listbox', 'Enable', 'inactive', 'String', {}, ...
-                'Tag', 'Logging Display', 'FontSize', .8*obj.H.fsz);                        
+                'Tag', 'Logging Display', 'FontSize', 14);                        
         end
         
         function initPars(obj)
@@ -615,15 +612,12 @@ classdef ksGUI < handle
         end
         
         function advancedPopup(obj)
-            % move focus to command window
-            commandwindow;
+            
             % bring up popup window to set other ops
             helpdlg({'To set advanced options, do this in the command window:','',...
                 '>> ks = get(gcf, ''UserData'');',...
-                sprintf('\t[...I''ll do this for you now]'),...
-                '>> ks.ops.myOption = myValue;'});
-            evalin('base', 'ks = get(1029321, ''UserData'');') % 1029321 is default kilosort gui window figure number
-            evalin('base', 'fprintf(2,''ks.ops =\n''), disp(ks.ops)'); % show current parameters in command window
+                '>> ks.ops.myOption = myValue;'})
+            
         end
         
         function runAll(obj)
@@ -696,7 +690,7 @@ classdef ksGUI < handle
                         
             obj.ops.Th = str2num(obj.H.settings.setThEdt.String);
             if isempty(obj.ops.Th)||any(isnan(obj.ops.Th))
-                obj.ops.Th = [9 9];
+                obj.ops.Th = [10 4];
             end
             obj.H.settings.setThEdt.String = num2str(obj.ops.Th);
             
@@ -726,7 +720,7 @@ classdef ksGUI < handle
             
             % do preprocessing
             obj.ops.gui = obj; % for kilosort to access, e.g. calling "log"
-%             try
+            try
                 obj.log('Preprocessing...'); 
                 obj.rez = preprocessDataSub(obj.ops);
                 obj.rez = datashift2(obj.rez, 1);
@@ -752,16 +746,13 @@ classdef ksGUI < handle
                 
                 set(obj.H.settings.runSpikesortBtn, 'enable', 'on');
                 
-                % reset spikesorting run status flag
-                obj.P.ksDone = false;
-                
                 % update gui with results of preprocessing
                 obj.updateDataView();
                 obj.log('Done preprocessing.'); 
-%             catch ex
-%                 obj.log(sprintf('Error preprocessing! %s', ex.message));
-%                 keyboard
-%             end
+            catch ex
+                obj.log(sprintf('Error preprocessing! %s', ex.message));
+                keyboard
+            end
             
         end
         
@@ -785,39 +776,41 @@ classdef ksGUI < handle
         
         function runSpikesort(obj)
             % fit templates
-%             try
+            try
                 % pre-clustering to re-order batches by depth
 %                 obj.log('Pre-clustering to re-order batches by depth')
 %                 obj.rez = clusterSingleBatches(obj.rez);
                 
                 % main optimization
-                obj.log('Extracting spikes for clustering')
-                [obj.rez, st3, tF]     = extract_spikes(obj.rez);
+                obj.log('Main optimization')
+                obj.rez = learnAndSolve8b(obj.rez, 1);
                 
-                obj.log('First clustering')
-                obj.rez                = template_learning(obj.rez, tF, st3);
-                
-                obj.log('Template matching on binary file')                
-                [obj.rez, st3, tF]     = trackAndSort(obj.rez);
-
-                obj.log('Second clustering')
-                obj.rez                = final_clustering(obj.rez, tF, st3);
-                
-                obj.log('Merges...')                
-                obj.rez                = find_merges(obj.rez, 1);
-
-                
-                obj.log(sprintf('found %d good units \n', sum(obj.rez.good>0)))
+                % final splits and merges
+                if 1
+                    obj.log('Merges...')
+                    obj.rez = find_merges(obj.rez, 1);
+                    
+                    % final splits by SVD
+                    obj.log('Splits part 1/2...')
+                    obj.rez = splitAllClusters(obj.rez, 1);
+                    
+                    % decide on cutoff
+                    obj.log('Last step. Setting cutoff...')
+                    obj.rez = set_cutoff(obj.rez);
+                    obj.rez.good = get_good_units(obj.rez);
+                    
+                    obj.log(sprintf('found %d good units \n', sum(obj.rez.good>0)))
+                end
                                                                 
                 obj.P.ksDone = true;
                 
-                obj.log('Kilosort finished!');    fprintf('\tKilosort finished!\n');
+                obj.log('Kilosort finished!');
                 set(obj.H.settings.runSaveBtn, 'enable', 'on');
                 obj.updateDataView();
-%             catch ex
-%                 obj.log(sprintf('Error running kilosort! %s', ex.message));
-%             end   
-%                         
+            catch ex
+                obj.log(sprintf('Error running kilosort! %s', ex.message));
+            end   
+                        
         end
         
         function runSaveToPhy(obj)            
@@ -833,11 +826,11 @@ classdef ksGUI < handle
             fname = fullfile(obj.ops.saveDir, 'rez.mat');
             save(fname, 'rez', '-v7.3');
             
-%             try
-                rezToPhy2(obj.rez, fullfile(obj.ops.saveDir));
-%            catch ex
-%                obj.log(sprintf('Error saving data for phy! %s', ex.message));
-%            end            
+            try
+                rezToPhy(obj.rez, obj.ops.saveDir);
+            catch ex
+                obj.log(sprintf('Error saving data for phy! %s', ex.message));
+            end            
             obj.log('Done');
         end
             
@@ -1590,11 +1583,9 @@ classdef ksGUI < handle
             % show a message to the user in the log box
             timestamp = datestr(now, 'dd-mm-yyyy HH:MM:SS');
             str = sprintf('[%s] %s', timestamp, message);
-            % If error, tint logBox red
-            bgColor = [1 1 1] - [0 1 1]*.3*contains(str,'Error');
             current = get(obj.H.logBox, 'String');
             set(obj.H.logBox, 'String', [current; str], ...
-                'Value', numel(current) + 1, 'BackgroundColor', bgColor);
+                'Value', numel(current) + 1);
             drawnow;
         end
     end
