@@ -22,8 +22,19 @@ dataRAW = dataRAW(:, chanMap); % subsample only good channels
 dataRAW = dataRAW - mean(dataRAW, 1); % subtract mean of each channel
 
 % CAR, common average referencing by median
-if getOr(ops, 'CAR', 1)
+if getOr(ops, 'CARglobal', false)
     dataRAW = dataRAW - median(dataRAW, 2); % subtract median across channels
+elseif getOr(ops, 'CAR', true)
+    % now make demux CAR the default
+    ver = getOr(ops, 'probeVersion', 2);
+    sampShifts = npSampShifts(ver);
+    sampShifts = sampShifts(chanMap); 
+    
+    ushifts = unique(sampShifts); 
+    for n = 1:numel(ushifts)
+        theseCh = sampShifts==ushifts(n);
+        dataRAW(:,theseCh) = dataRAW(:,theseCh) - median(dataRAW(:,theseCh), 2); % subtract median across channels
+    end
 end
 
 % next four lines should be equivalent to filtfilt (which cannot be used because it requires float64)
