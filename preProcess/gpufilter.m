@@ -6,6 +6,10 @@ function datr = gpufilter(buff, ops, chanMap)
 % ops.fs and ops.fshigh are sampling and high-pass frequencies respectively
 % if ops.fslow is present, it is used as low-pass frequency (discouraged)
 
+temp = getOr(ops, 'chansToAnalyze', 1:numel(chanMap));
+chansToAnalyze = false(size(chanMap)); 
+chansToAnalyze(temp) = true; 
+
 % set up the parameters of the filter
 if isfield(ops,'fslow')&&ops.fslow<ops.fs/2
     [b1, a1] = butter(3, [ops.fshigh/ops.fs,ops.fslow/ops.fs]*2, 'bandpass'); % butterworth filter with only 3 nodes (otherwise it's unstable for float32)
@@ -23,8 +27,18 @@ dataRAW = dataRAW - mean(dataRAW, 1); % subtract mean of each channel
 
 % CAR, common average referencing by median
 if getOr(ops, 'CAR', 1)
-    dataRAW = dataRAW - median(dataRAW, 2); % subtract median across channels
+    ver = getOr(ops, 'probeVersion', 2); 
+    sampShifts = npSampShifts(ver);
+    sampShifts = sampShifts(chanMap); 
+    
+    ushifts = unique(sampShifts); 
+    for n = 1:numel(ushifts)
+        theseCh = sampShifts==ushifts(n);
+        dataRAW(:,theseCh) = dataRAW(:,theseCh) - median(dataRAW(:,theseCh), 2); % subtract median across channels
+    end
 end
+
+dataRAW = dataRAW(:, chansToAnalyze(chanMap));
 
 % next four lines should be equivalent to filtfilt (which cannot be used because it requires float64)
 datr = filter(b1, a1, dataRAW); % causal forward filter
